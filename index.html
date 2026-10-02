@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TEAL PERFUMES PUZZLE - Block Arcade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-grad-1: #14b8a6; /* Teal 500 */
+            --bg-grad-2: #ccfbf1; /* Teal 50 */
+            --grid-bg: rgba(255, 255, 255, 0.4);
+            --cell-bg: rgba(255, 255, 255, 0.6);
+            --cell-border: rgba(204, 251, 241, 0.5);
+            --text-main: #0f766e;
+            --panel-bg: rgba(255,255,255,0.7);
+            
+            /* Perfume Colors */
+            --p-gold-1: #FFDF00; --p-gold-2: #D4AF37;
+            --p-rose-1: #FFA07A; --p-rose-2: #FF69B4;
+            --p-cyan-1: #E0FFFF; --p-cyan-2: #00CED1;
+            --p-ameth-1: #DDA0DD; --p-ameth-2: #8A2BE2;
+            --p-emerald-1: #98FB98; --p-emerald-2: #2E8B57;
+        }
+
+        body.dark-mode {
+            --bg-grad-1: #042f2e; /* Teal 900 */
+            --bg-grad-2: #0f766e; /* Teal 600 */
+            --grid-bg: rgba(0, 0, 0, 0.4);
+            --cell-bg: rgba(255, 255, 255, 0.1);
+            --cell-border: rgba(255, 255, 255, 0.15);
+            --text-main: #ccfbf1;
+            --panel-bg: rgba(0,0,0,0.5);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
+            touch-action: none; /* Prevent scroll on drag */
+            overflow: hidden;
+            user-select: none;
+            color: var(--text-main);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: var(--text-main);
+            text-align: center;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            height: 100dvh;
+            padding: 1rem;
+            box-sizing: border-box;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .grid-board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 3px;
+            background: var(--grid-bg);
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-width: 550px;
+            max-height: 550px;
+            position: relative;
+        }
+
+        .cell {
+            background: var(--cell-bg);
+            border-radius: 6px;
+            border: 1px solid var(--cell-border);
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.3);
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .cell-highlight {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px dashed rgba(255, 255, 255, 0.8);
+            transform: scale(0.95);
+        }
+
+        /* Ghost styling for drag preview */
+        .ghost-block {
+            opacity: 0.5;
+            pointer-events: none;
+            transform: scale(0.9);
+        }
+
+        .perfume-block {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 5%;
+        }
+
+        /* Glass bottle effect */
+        .perfume-bottle-glass {
+            position: absolute;
+            bottom: 0;
+            width: 90%;
+            height: 80%;
+            background: rgba(255, 255, 255, 0.25);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 4px 4px 8px 8px;
+            box-shadow: 
+                inset -2px -2px 6px rgba(0,0,0,0.1),
+                inset 2px 2px 6px rgba(255,255,255,0.8),
+                0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        /* Spray Cap */
+        .perfume-cap {
+            position: absolute;
+            top: 5%;
+            width: 25%;
+            height: 15%;
+            background: linear-gradient(90deg, #e2e8f0, #cbd5e1, #94a3b8, #e2e8f0);
+            border-radius: 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        
+        .perfume-cap::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40%;
+            height: 4px;
+            background: #94a3b8;
+            border-radius: 2px 2px 0 0;
+        }
+
+        /* Liquid inside */
+        .perfume-liquid {
+            width: 100%;
+            height: 75%; /* Liquid level */
+            border-radius: 0 0 6px 6px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.4);
+        }
+
+        /* Bubbles */
+        .perfume-liquid::after {
+            content: '°';
+            position: absolute;
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            bottom: 4px;
+            left: 30%;
+            letter-spacing: 6px;
+        }
+
+        @keyframes slosh {
+            0% { transform: skewX(0deg) scaleY(1); }
+            25% { transform: skewX(-10deg) scaleY(1.05) translateY(-2%); }
+            50% { transform: skewX(5deg) scaleY(0.95) translateY(2%); }
+            75% { transform: skewX(-5deg) scaleY(1.02) translateY(-1%); }
+            100% { transform: skewX(0deg) scaleY(1); }
+        }
+
+        .dragging .perfume-liquid {
+            animation: slosh 0.8s infinite alternate ease-in-out;
+        }
+
+        .color-gold .perfume-liquid { background: linear-gradient(180deg, rgba(255,223,0,0.8), var(--p-gold-2)); }
+        .color-rose .perfume-liquid { background: linear-gradient(180deg, rgba(255,160,122,0.8), var(--p-rose-2)); }
+        .color-cyan .perfume-liquid { background: linear-gradient(180deg, rgba(224,255,255,0.8), var(--p-cyan-2)); }
+        .color-ameth .perfume-liquid { background: linear-gradient(180deg, rgba(221,160,221,0.8), var(--p-ameth-2)); }
+        .color-emerald .perfume-liquid { background: linear-gradient(180deg, rgba(152,251,152,0.8), var(--p-emerald-2)); }
+
+        #tray {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            height: 160px;
+            background: var(--panel-bg);
+            border-radius: 16px;
+            padding: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            transition: background 0.3s;
+        }
+
+        .shape-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .shape {
+            display: grid;
+            gap: 2px;
+            cursor: grab;
+            transition: transform 0.2s;
+        }
+        
+        .shape:active {
+            cursor: grabbing;
+        }
+
+        .shape.disabled {
+            opacity: 0.4;
+            filter: grayscale(1);
+            pointer-events: none;
+        }
+
+        .dragging {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            transform: scale(1.2); /* Lift up effect */
+            transition: none; /* No transition while following pointer */
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.3));
+            opacity: 0.75 !important; /* Semi-transparent while dragging */
+        }
+
+        @keyframes clearFlash {
+            0% { transform: scale(1); background: white; opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        .clearing .perfume-block {
+            animation: clearFlash 0.4s ease-out forwards;
+        }
+
+        .ui-panel {
+            background: var(--panel-bg);
+            padding: 8px 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-weight: 600;
+            color: var(--text-main);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        #game-over-screen {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .go-content {
+            background: var(--panel-bg);
+            padding: 3rem;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: background 0.3s;
+        }
+
+        .btn-play {
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            color: white;
+            padding: 12px 32px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);
+            transition: transform 0.1s;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-play:active {
+            transform: scale(0.95);
+        }
+
+        .top-controls {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .toggle-btn {
+            background: var(--panel-bg);
+            border: none;
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Particle effect canvas */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particles"></canvas>
+
+    <div id="game-container">
+        <!-- Top Controls -->
+        <div class="top-controls">
+            <button class="toggle-btn" onclick="toggleLanguage()" id="lang-btn">EN</button>
+            <button class="toggle-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
+        </div>
+
+        <!-- Header -->
+        <div class="w-full flex justify-between items-center px-2 mb-2">
+            <div class="ui-panel">
+                <span class="text-xs uppercase tracking-wider block leading-tight" id="lbl-score">Score</span>
+                <span id="score" class="text-2xl leading-tight">0</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold italic" id="game-title">TEAL PERFUMES PUZZLE</h1>
+            <div class="ui-panel text-right">
+                <span class="text-xs uppercase tracking-wider block leading-tight" id="lbl-best">Best</span>
+                <span id="high-score" class="text-2xl leading-tight">0</span>
+            </div>
+        </div>
+
+        <!-- The 10x10 Grid -->
+        <div id="grid" class="grid-board"></div>
+
+        <!-- Tray for 3 Shapes -->
+        <div id="tray"></div>
+    </div>
+
+    <div id="game-over-screen">
+        <div class="go-content">
+            <h2 class="text-4xl sm:text-5xl font-bold mb-4 font-[Playfair Display] italic" id="lbl-gameover" style="color: var(--text-main);">Out of Space!</h2>
+            <p class="text-lg mb-2" id="lbl-final" style="color: var(--text-main);">Final Score</p>
+            <p id="final-score" class="text-6xl font-bold mb-8" style="color: var(--text-main);">0</p>
+            <button class="btn-play" onclick="resetGame()" id="btn-restart">Play Again 🧴</button>
+        </div>
+    </div>
+
+    <script>
+        const GRID_SIZE = 10;
+        const gridElement = document.getElementById('grid');
+        const trayElement = document.getElementById('tray');
+        const scoreElement = document.getElementById('score');
+        const highScoreElement = document.getElementById('high-score');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const finalScoreElement = document.getElementById('final-score');
+        
+        let grid = [];
+        let score = 0;
+        let highScore = localStorage.getItem('parfumHighScore') || 0;
+        let currentShapes = [];
+        let currentLang = 'EN';
+        let isDarkMode = false;
+        
+        const i18n = {
+            'EN': {
+                'score': 'Score',
+                'best': 'Best',
+                'title': 'TEAL PERFUMES PUZZLE',
+                'gameover': 'Out of Space!',
+                'final': 'Final Score',
+                'restart': 'Play Again 🧴',
+                'langBtn': 'PT',
+                'themeLight': '🌙 Dark',
+                'themeDark': '☀️ Light'
+            },
+            'PT': {
+                'score': 'Pontos',
+                'best': 'Recorde',
+                'title': 'QUEBRA-CABEÇA TEAL',
+                'gameover': 'Sem Espaço!',
+                'final': 'Pontuação Final',
+                'restart': 'Jogar Novamente 🧴',
+                'langBtn': 'EN',
+                'themeLight': '🌙 Escuro',
+                'themeDark': '☀️ Claro'
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'EN' ? 'PT' : 'EN';
+            updateUI();
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            updateUI();
+        }
+
+        function updateUI() {
+            const texts = i18n[currentLang];
+            document.getElementById('lbl-score').innerText = texts['score'];
+            document.getElementById('lbl-best').innerText = texts['best'];
+            document.getElementById('game-title').innerText = texts['title'];
+            document.getElementById('lbl-gameover').innerText = texts['gameover'];
+            document.getElementById('lbl-final').innerText = texts['final'];
+            document.getElementById('btn-restart').innerText = texts['restart'];
+            document.getElementById('lang-btn').innerText = texts['langBtn'];
+            document.getElementById('theme-btn').innerText = isDarkMode ? texts['themeDark'] : texts['themeLight'];
+        }
+
+        const colors = ['color-gold', 'color-rose', 'color-cyan', 'color-ameth', 'color-emerald'];
+
+        // Define all polyomino shapes (1 = block, 0 = empty)
+        const SHAPES = [
+            // 1x1
+            [[1]],
+            // 2x2
+            [[1,1], [1,1]],
+            // 3x3
+            [[1,1,1], [1,1,1], [1,1,1]],
+            // Horizontal lines
+            [[1,1]], [[1,1,1]], [[1,1,1,1]], [[1,1,1,1,1]],
+            // Vertical lines
+            [[1],[1]], [[1],[1],[1]], [[1],[1],[1],[1]], [[1],[1],[1],[1],[1]],
+            // L shapes (small)
+            [[1,0], [1,1]], [[0,1], [1,1]], [[1,1], [1,0]], [[1,1], [0,1]],
+            // L shapes (medium 3x3)
+            [[1,0,0], [1,0,0], [1,1,1]], [[0,0,1], [0,0,1], [1,1,1]],
+            [[1,1,1], [1,0,0], [1,0,0]], [[1,1,1], [0,0,1], [0,0,1]],
+            // T shapes
+        [[1,1,1], [0,1,0]], [[0,1,0], [1,1,1]],
+        [[1,0], [1,1], [1,0]], [[0,1], [1,1], [0,1]]
+    ];
+
+    function createPerfumeBlockDOM(colorClass, isGhost = false) {
+        const blockDiv = document.createElement('div');
+        blockDiv.className = `perfume-block ${colorClass}`;
+        if (isGhost) blockDiv.classList.add('ghost-block');
+        
+        const cap = document.createElement('div');
+        cap.className = 'perfume-cap';
+        
+        const glass = document.createElement('div');
+        glass.className = 'perfume-bottle-glass';
+        
+        const liquid = document.createElement('div');
+        liquid.className = 'perfume-liquid';
+        
+        glass.appendChild(liquid);
+        blockDiv.appendChild(cap);
+        blockDiv.appendChild(glass);
+        
+        return blockDiv;
+    }
+
+    function initGrid() {
+            grid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
+            gridElement.innerHTML = '';
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.r = r;
+                    cell.dataset.c = c;
+                    gridElement.appendChild(cell);
+                }
+            }
+            highScoreElement.innerText = highScore;
+            score = 0;
+            updateScore(0);
+        }
+
+        function renderShape(shapeMatrix, colorClass) {
+            const rows = shapeMatrix.length;
+            const cols = shapeMatrix[0].length;
+            const shapeDiv = document.createElement('div');
+            shapeDiv.className = 'shape';
+            shapeDiv.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            shapeDiv.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+            // Fixed block size for the tray display increased
+            const blockSize = 30; 
+            shapeDiv.style.width = `${cols * blockSize}px`;
+            shapeDiv.style.height = `${rows * blockSize}px`;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (shapeMatrix[r][c]) {
+                        const blockDiv = createPerfumeBlockDOM(colorClass);
+                        shapeDiv.appendChild(blockDiv);
+                    } else {
+                        const emptyDiv = document.createElement('div');
+                        emptyDiv.style.visibility = 'hidden';
+                        shapeDiv.appendChild(emptyDiv);
+                    }
+                }
+            }
+            
+            shapeDiv.dataset.matrix = JSON.stringify(shapeMatrix);
+            shapeDiv.dataset.color = colorClass;
+            return shapeDiv;
+        }
+
+        function generateShapes() {
+            trayElement.innerHTML = '';
+            currentShapes = [];
+            for (let i = 0; i < 3; i++) {
+                const randomShape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                const container = document.createElement('div');
+                container.className = 'shape-container';
+                const shapeDOM = renderShape(randomShape, randomColor);
+                
+                currentShapes.push({ matrix: randomShape, dom: shapeDOM, used: false });
+                
+                container.appendChild(shapeDOM);
+                trayElement.appendChild(container);
+
+                setupDragEvents(shapeDOM, i);
+            }
+            checkGameOver();
+        }
+
+        let draggedShape = null;
+        let dragClone = null;
+        let shapeIndex = -1;
+        let offsetX = 0;
+        let offsetY = 0;
+        let dragCellSize = 0;
+
+        function setupDragEvents(shapeDOM, index) {
+            const startDrag = (e) => {
+                if (currentShapes[index].used) return;
+                
+                e.preventDefault();
+                draggedShape = shapeDOM;
+                shapeIndex = index;
+                
+                // Create clone for floating
+                dragClone = shapeDOM.cloneNode(true);
+                dragClone.classList.add('dragging');
+                document.body.appendChild(dragClone);
+                
+                draggedShape.style.opacity = '0'; // Hide original
+                
+                // Calculate dynamic block size based on current grid to ensure it matches exactly
+                const gridRect = gridElement.getBoundingClientRect();
+                dragCellSize = gridRect.width / GRID_SIZE;
+                
+                const matrix = currentShapes[index].matrix;
+                const rows = matrix.length;
+                const cols = matrix[0].length;
+                
+                dragClone.style.width = `${cols * dragCellSize}px`;
+                dragClone.style.height = `${rows * dragCellSize}px`;
+
+                // Handle touch and mouse coordinates
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                // Determine offset so it grabs nicely from center, but lift it up slightly for visibility
+                const dragWidth = cols * dragCellSize;
+                const dragHeight = rows * dragCellSize;
+                offsetX = dragWidth / 2;
+                offsetY = dragHeight + 40; // Lift above finger significantly for better view
+
+                moveDrag(clientX, clientY);
+                
+                // Add document listeners for move/end
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+                document.addEventListener('touchmove', onTouchMove, { passive: false });
+                document.addEventListener('touchend', onTouchEnd);
+            };
+
+            shapeDOM.addEventListener('mousedown', startDrag);
+            shapeDOM.addEventListener('touchstart', startDrag, { passive: false });
+        }
+
+        function moveDrag(clientX, clientY) {
+            if (!dragClone) return;
+            const x = clientX - offsetX;
+            const y = clientY - offsetY;
+            dragClone.style.left = `${x}px`;
+            dragClone.style.top = `${y}px`;
+
+            // Highlight preview logic
+            clearHighlights();
+            const pos = getGridPlacement(x, y);
+            if (pos && canPlace(currentShapes[shapeIndex].matrix, pos.r, pos.c)) {
+                highlightCells(currentShapes[shapeIndex].matrix, pos.r, pos.c);
+            }
+        }
+
+        const onMouseMove = (e) => moveDrag(e.clientX, e.clientY);
+        const onTouchMove = (e) => {
+            e.preventDefault(); // Prevent scrolling
+            moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+        };
+
+        function getGridPlacement(floatingX, floatingY) {
+            // floatingX and floatingY represent the top-left corner of the dragged element
+            const gridRect = gridElement.getBoundingClientRect();
+            
+            // We want to calculate position based on the center of the top-left cell of the shape
+            // This makes snapping very accurate to the visual grid cells
+            const cellCenterX = floatingX + (dragCellSize / 2);
+            const cellCenterY = floatingY + (dragCellSize / 2);
+
+            // Add a small buffer to allow placing on edges more easily
+            const buffer = dragCellSize * 0.5;
+
+            if (cellCenterX < gridRect.left - buffer || cellCenterX > gridRect.right + buffer || 
+                cellCenterY < gridRect.top - buffer || cellCenterY > gridRect.bottom + buffer) {
+                return null; // Out of bounds
+            }
+
+            const c = Math.floor((cellCenterX - gridRect.left) / dragCellSize);
+            const r = Math.floor((cellCenterY - gridRect.top) / dragCellSize);
+
+            return { r, c };
+        }
+
+        function canPlace(matrix, startR, startC) {
+            for (let r = 0; r < matrix.length; r++) {
+                for (let c = 0; c < matrix[r].length; c++) {
+                    if (matrix[r][c]) {
+                        const targetR = startR + r;
+                        const targetC = startC + c;
+                        
+                        if (targetR < 0 || targetR >= GRID_SIZE || targetC < 0 || targetC >= GRID_SIZE) {
+                            return false; // Out of bounds
+                        }
+                        if (grid[targetR][targetC]) {
+                            return false; // Overlap
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        function clearHighlights() {
+            document.querySelectorAll('.cell-highlight').forEach(el => {
+                el.classList.remove('cell-highlight');
+                // Remove ghost blocks
+                const ghost = el.querySelector('.ghost-block');
+                if (ghost) ghost.remove();
+            });
+        }
+
+        function highlightCells(matrix, startR, startC) {
+            const colorClass = draggedShape ? draggedShape.dataset.color : 'color-gold';
+            for (let r = 0; r < matrix.length; r++) {
+                for (let c = 0; c < matrix[r].length; c++) {
+                    if (matrix[r][c]) {
+                        const cell = getCellDom(startR + r, startC + c);
+                        if (cell) {
+                            cell.classList.add('cell-highlight');
+                            // Inject a ghost perfume block
+                            const ghostBlock = createPerfumeBlockDOM(colorClass, true);
+                            cell.appendChild(ghostBlock);
+                        }
+                    }
+                }
+            }
+        }
+
+        function getCellDom(r, c) {
+            return gridElement.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+        }
+
+        const onMouseUp = (e) => handleDrop(e.clientX, e.clientY);
+        const onTouchEnd = (e) => {
+            // touchEnd doesn't have clientX on the event, use changedTouches
+            const touch = e.changedTouches[0];
+            handleDrop(touch.clientX, touch.clientY);
+        };
+
+        function handleDrop(clientX, clientY) {
+            if (!dragClone) return;
+
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
+
+            const x = clientX - offsetX;
+            const y = clientY - offsetY;
+            
+            clearHighlights();
+            const pos = getGridPlacement(x, y);
+            const shapeObj = currentShapes[shapeIndex];
+
+            if (pos && canPlace(shapeObj.matrix, pos.r, pos.c)) {
+                // Place it!
+                placeShape(shapeObj, pos.r, pos.c);
+                shapeObj.used = true;
+                draggedShape.classList.add('disabled');
+                
+                // Spray splash effect on placement
+                createSpraySplash(clientX, clientY, draggedShape.dataset.color);
+                
+                checkLines();
+                
+                // Check if all 3 are used
+                if (currentShapes.every(s => s.used)) {
+                    setTimeout(generateShapes, 200);
+                } else {
+                    checkGameOver();
+                }
+            } else {
+                // Snap back
+                draggedShape.style.opacity = '1';
+            }
+
+            dragClone.remove();
+            dragClone = null;
+            draggedShape = null;
+            shapeIndex = -1;
+        }
+
+        function placeShape(shapeObj, startR, startC) {
+            const matrix = shapeObj.matrix;
+            const colorClass = draggedShape.dataset.color;
+            let blocksPlaced = 0;
+
+            for (let r = 0; r < matrix.length; r++) {
+                for (let c = 0; c < matrix[r].length; c++) {
+                    if (matrix[r][c]) {
+                        grid[startR + r][startC + c] = colorClass;
+                        const cellDom = getCellDom(startR + r, startC + c);
+                        
+                        // Create permanent block using the new bottle design
+                        const blockDiv = createPerfumeBlockDOM(colorClass);
+                        
+                        cellDom.innerHTML = '';
+                        cellDom.appendChild(blockDiv);
+                        blocksPlaced++;
+                    }
+                }
+            }
+            updateScore(blocksPlaced * 10);
+        }
+
+        function checkLines() {
+            let rowsToClear = [];
+            let colsToClear = [];
+
+            // Check rows
+            for (let r = 0; r < GRID_SIZE; r++) {
+                if (grid[r].every(cell => cell !== null)) {
+                    rowsToClear.push(r);
+                }
+            }
+
+            // Check columns
+            for (let c = 0; c < GRID_SIZE; c++) {
+                let full = true;
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    if (grid[r][c] === null) {
+                        full = false;
+                        break;
+                    }
+                }
+                if (full) colsToClear.push(c);
+            }
+
+            if (rowsToClear.length > 0 || colsToClear.length > 0) {
+                clearLines(rowsToClear, colsToClear);
+            }
+        }
+
+        function clearLines(rows, cols) {
+            const cellsToClear = new Set();
+            
+            rows.forEach(r => {
+                for (let c = 0; c < GRID_SIZE; c++) cellsToClear.add(`${r},${c}`);
+            });
+            cols.forEach(c => {
+                for (let r = 0; r < GRID_SIZE; r++) cellsToClear.add(`${r},${c}`);
+            });
+
+            // Score calculation: 100 per line, plus combo multiplier
+            const totalLines = rows.length + cols.length;
+            const comboMultiplier = totalLines > 1 ? totalLines : 1;
+            const points = totalLines * 100 * comboMultiplier;
+            updateScore(points);
+            createParticles();
+
+            // Animate and clear logic array
+            cellsToClear.forEach(coord => {
+                const [r, c] = coord.split(',').map(Number);
+                const cellDom = getCellDom(r, c);
+                cellDom.classList.add('clearing');
+                
+                grid[r][c] = null;
+                
+                // Remove DOM elements after animation
+                setTimeout(() => {
+                    cellDom.innerHTML = '';
+                    cellDom.classList.remove('clearing');
+                }, 400);
+            });
+
+            // Recheck game over after clearing, space might have freed up
+            setTimeout(checkGameOver, 450);
+        }
+
+        function updateScore(points) {
+            score += points;
+            scoreElement.innerText = score;
+            
+            if (score > highScore) {
+                highScore = score;
+                highScoreElement.innerText = highScore;
+                localStorage.setItem('parfumHighScore', highScore);
+            }
+            
+            // Pop effect on score
+            if (points > 0) {
+                scoreElement.style.transform = 'scale(1.3)';
+                setTimeout(() => {
+                    scoreElement.style.transform = 'scale(1)';
+                }, 150);
+                scoreElement.style.transition = 'transform 0.15s ease-out';
+            }
+        }
+
+        function checkGameOver() {
+            // If any unused shape can be placed, game is not over
+            for (let i = 0; i < currentShapes.length; i++) {
+                if (currentShapes[i].used) continue;
+                
+                const matrix = currentShapes[i].matrix;
+                let canFit = false;
+
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        if (canPlace(matrix, r, c)) {
+                            canFit = true;
+                            break;
+                        }
+                    }
+                    if (canFit) break;
+                }
+
+                if (canFit) return; // At least one shape fits
+            }
+
+            // If we reach here, no shapes fit!
+            endGame();
+        }
+
+        function endGame() {
+            setTimeout(() => {
+                finalScoreElement.innerText = score;
+                gameOverScreen.style.display = 'flex';
+            }, 300);
+        }
+
+        function resetGame() {
+            gameOverScreen.style.display = 'none';
+            initGrid();
+            generateShapes();
+        }
+
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let particlesArr = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function createParticles() {
+            // Burst of elegant particles when a line clears
+            const colors = ['#14b8a6', '#99f6e4', '#2dd4bf', '#ccfbf1'];
+            for(let i=0; i<40; i++) {
+                particlesArr.push({
+                    x: canvas.width / 2 + (Math.random() - 0.5) * 300, // roughly center or over grid
+                    y: canvas.height / 2 + (Math.random() - 0.5) * 300,
+                    size: Math.random() * 6 + 2,
+                    speedX: (Math.random() - 0.5) * 10,
+                    speedY: (Math.random() - 0.5) * 10 - 2,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    life: 1
+                });
+            }
+        }
+
+        function createSpraySplash(x, y, colorClass) {
+            // Colors mapping for spray
+            const sprayColors = {
+                'color-gold': '#FFDF00',
+                'color-rose': '#FF69B4',
+                'color-cyan': '#00CED1',
+                'color-ameth': '#DDA0DD',
+                'color-emerald': '#98FB98'
+            };
+            const pColor = sprayColors[colorClass] || '#ffffff';
+            
+            // Generate a burst of tiny mist particles
+            for(let i=0; i<25; i++) {
+                particlesArr.push({
+                    x: x + (Math.random() - 0.5) * 40,
+                    y: y + (Math.random() - 0.5) * 40,
+                    size: Math.random() * 3 + 1,
+                    speedX: (Math.random() - 0.5) * 6,
+                    speedY: (Math.random() - 1) * 6, // mostly upwards
+                    color: pColor,
+                    life: 1,
+                    isMist: true
+                });
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for(let i = 0; i < particlesArr.length; i++){
+                let p = particlesArr[i];
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                ctx.fill();
+                
+                p.x += p.speedX;
+                p.y += p.speedY;
+                
+                if (p.isMist) {
+                    p.speedX *= 0.95; // air resistance
+                    p.speedY *= 0.95;
+                    p.life -= 0.04; // mist fades faster
+                } else {
+                    p.speedY += 0.15; // normal gravity
+                    p.life -= 0.02; // normal fade
+                }
+                
+                if(p.life <= 0){
+                    particlesArr.splice(i, 1);
+                    i--;
+                }
+            }
+            ctx.globalAlpha = 1;
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        updateUI(); // Initial language setup
+        initGrid();
+        generateShapes();
+
+    </script>
+</body>
+</html>
