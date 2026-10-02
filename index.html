@@ -2,207 +2,205 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TEAL PERFUMES PUZZLE - Block Arcade</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>TEAL PERFUMES PUZZLE</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600;1,700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-grad-1: #14b8a6; /* Teal 500 */
-            --bg-grad-2: #ccfbf1; /* Teal 50 */
-            --grid-bg: rgba(255, 255, 255, 0.4);
-            --cell-bg: rgba(255, 255, 255, 0.6);
-            --cell-border: rgba(204, 251, 241, 0.5);
+            --bg-top: #14b8a6; /* Teal 500 */
+            --bg-bot: #ccfbf1; /* Teal 50 */
             --text-main: #0f766e;
-            --panel-bg: rgba(255,255,255,0.7);
+            --text-sub: #115e59;
+            --grid-bg: rgba(255, 255, 255, 0.45);
+            --cell-bg: rgba(255, 255, 255, 0.6);
+            --cell-border: rgba(204, 251, 241, 0.8);
+            --panel-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --glass-bg: rgba(255, 255, 255, 0.3);
             
-            /* Perfume Colors */
-            --p-gold-1: #FFDF00; --p-gold-2: #D4AF37;
-            --p-rose-1: #FFA07A; --p-rose-2: #FF69B4;
-            --p-cyan-1: #E0FFFF; --p-cyan-2: #00CED1;
-            --p-ameth-1: #DDA0DD; --p-ameth-2: #8A2BE2;
-            --p-emerald-1: #98FB98; --p-emerald-2: #2E8B57;
+            /* Perfume Liquids */
+            --c-gold: #FFD700; --c-gold-dark: #B8860B;
+            --c-rose: #FF69B4; --c-rose-dark: #C71585;
+            --c-cyan: #00FFFF; --c-cyan-dark: #008B8B;
+            --c-ameth: #DDA0DD; --c-ameth-dark: #8A2BE2;
+            --c-emerd: #50C878; --c-emerd-dark: #2E8B57;
         }
 
         body.dark-mode {
-            --bg-grad-1: #042f2e; /* Teal 900 */
-            --bg-grad-2: #0f766e; /* Teal 600 */
-            --grid-bg: rgba(0, 0, 0, 0.4);
-            --cell-bg: rgba(255, 255, 255, 0.1);
-            --cell-border: rgba(255, 255, 255, 0.15);
+            --bg-top: #042f2e; /* Teal 900 */
+            --bg-bot: #0f766e; /* Teal 600 */
             --text-main: #ccfbf1;
-            --panel-bg: rgba(0,0,0,0.5);
+            --text-sub: #99f6e4;
+            --grid-bg: rgba(0, 0, 0, 0.4);
+            --cell-bg: rgba(255, 255, 255, 0.08);
+            --cell-border: rgba(255, 255, 255, 0.15);
+            --panel-bg: rgba(0, 0, 0, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-bg: rgba(255, 255, 255, 0.1);
         }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
-            touch-action: none;
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
+            touch-action: none; /* Prevents scroll/bounce on mobile */
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(160deg, var(--bg-top) 0%, var(--bg-bot) 100%);
+            color: var(--text-main);
+            transition: background 0.4s ease, color 0.4s ease;
             user-select: none;
-            color: var(--text-main);
-            transition: background 0.3s, color 0.3s;
+            -webkit-user-select: none;
         }
 
-        h1 {
-            font-family: 'Playfair Display', serif;
-            color: var(--text-main);
-            text-align: center;
-        }
-
-        .subtitle {
-            font-family: 'Playfair Display', serif;
-            color: var(--text-main);
-            opacity: 0.85;
-            font-size: 0.9rem;
-            margin-top: -4px;
-        }
-
-        #game-container {
+        #game-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            height: 100vh;
-            height: 100dvh;
-            padding: 1rem;
+            height: 100dvh; /* Dynamic viewport height for mobile browsers */
+            width: 100vw;
+            padding: max(env(safe-area-inset-top), 10px) 10px max(env(safe-area-inset-bottom), 15px) 10px;
             box-sizing: border-box;
-            max-width: 800px;
-            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        #shake-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            flex-grow: 1;
+            justify-content: center;
         }
 
         .grid-board {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
             grid-template-rows: repeat(10, 1fr);
-            gap: 3px;
+            gap: 2px;
             background: var(--grid-bg);
-            padding: 8px;
+            padding: 6px;
             border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            max-width: 550px;
-            max-height: 550px;
-            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            /* Responsive sizing: fit perfectly on both narrow and short screens */
+            width: min(92vw, 50vh); 
+            height: min(92vw, 50vh);
         }
 
         .cell {
             background: var(--cell-bg);
-            border-radius: 6px;
+            border-radius: 4px;
             border: 1px solid var(--cell-border);
+            box-shadow: inset 0 1px 3px rgba(255,255,255,0.2);
             position: relative;
-            box-shadow: inset 0 2px 4px rgba(255,255,255,0.3);
-            transition: background 0.2s, transform 0.2s;
         }
 
         .cell-highlight {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px dashed rgba(255, 255, 255, 0.8);
-            transform: scale(0.95);
-        }
-
-        .ghost-block {
-            opacity: 0.5;
-            pointer-events: none;
+            background: rgba(255, 255, 255, 0.25);
+            border: 2px dashed var(--text-main);
             transform: scale(0.9);
+            border-radius: 6px;
         }
 
         .perfume-block {
             width: 100%;
             height: 100%;
-            position: relative;
+            position: absolute;
+            top: 0; left: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-end;
             padding-bottom: 5%;
+            pointer-events: none; /* Let the container handle events */
         }
 
-        .perfume-bottle-glass {
+        .ghost-block {
+            opacity: 0.4;
+            transform: scale(0.85);
+        }
+
+        .bottle-glass {
             position: absolute;
-            bottom: 0;
-            width: 90%;
-            height: 80%;
-            background: rgba(255, 255, 255, 0.25);
-            border: 2px solid rgba(255, 255, 255, 0.7);
-            border-radius: 4px 4px 8px 8px;
+            bottom: 2%;
+            width: 88%;
+            height: 82%;
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 3px 3px 6px 6px;
             box-shadow: 
-                inset -2px -2px 6px rgba(0,0,0,0.1),
-                inset 2px 2px 6px rgba(255,255,255,0.8),
-                0 4px 6px rgba(0,0,0,0.1);
+                inset -2px -2px 5px rgba(0,0,0,0.1),
+                inset 2px 2px 5px rgba(255,255,255,0.6);
             overflow: hidden;
             display: flex;
             align-items: flex-end;
         }
 
-        .perfume-cap {
+        .bottle-cap {
             position: absolute;
-            top: 5%;
-            width: 25%;
-            height: 15%;
-            background: linear-gradient(90deg, #e2e8f0, #cbd5e1, #94a3b8, #e2e8f0);
+            top: 2%;
+            width: 30%;
+            height: 16%;
+            background: linear-gradient(90deg, #d1d5db, #f3f4f6, #9ca3af, #d1d5db);
             border-radius: 2px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
             z-index: 2;
         }
         
-        .perfume-cap::before {
+        .bottle-cap::after {
             content: '';
             position: absolute;
-            top: -4px;
+            top: -3px;
             left: 50%;
             transform: translateX(-50%);
             width: 40%;
-            height: 4px;
-            background: #94a3b8;
-            border-radius: 2px 2px 0 0;
+            height: 3px;
+            background: #9ca3af;
         }
 
-        .perfume-liquid {
+        .bottle-liquid {
             width: 100%;
-            height: 75%;
-            border-radius: 0 0 6px 6px;
+            height: 70%;
             position: relative;
             box-shadow: inset 0 2px 4px rgba(255,255,255,0.4);
             transform-origin: bottom center;
+            transition: height 0.2s;
         }
 
-        .perfume-liquid::after {
-            content: '°';
-            position: absolute;
-            color: rgba(255,255,255,0.6);
-            font-size: 14px;
-            bottom: 4px;
-            left: 30%;
-            letter-spacing: 6px;
-        }
-
+        /* Physics Slosh Animation */
         @keyframes slosh {
             0% { transform: skewX(0deg) scaleY(1); }
-            25% { transform: skewX(-10deg) scaleY(1.05) translateY(-2%); }
-            50% { transform: skewX(5deg) scaleY(0.95) translateY(2%); }
-            75% { transform: skewX(-5deg) scaleY(1.02) translateY(-1%); }
+            25% { transform: skewX(-12deg) scaleY(1.08) translateY(-2%); }
+            50% { transform: skewX(8deg) scaleY(0.92) translateY(2%); }
+            75% { transform: skewX(-6deg) scaleY(1.05) translateY(-1%); }
             100% { transform: skewX(0deg) scaleY(1); }
         }
 
-        .dragging .perfume-liquid {
-            animation: slosh 0.8s infinite alternate ease-in-out;
+        .is-dragging .bottle-liquid {
+            animation: slosh 0.6s infinite alternate ease-in-out;
         }
 
-        .color-gold .perfume-liquid { background: linear-gradient(180deg, rgba(255,223,0,0.8), var(--p-gold-2)); }
-        .color-rose .perfume-liquid { background: linear-gradient(180deg, rgba(255,160,122,0.8), var(--p-rose-2)); }
-        .color-cyan .perfume-liquid { background: linear-gradient(180deg, rgba(224,255,255,0.8), var(--p-cyan-2)); }
-        .color-ameth .perfume-liquid { background: linear-gradient(180deg, rgba(221,160,221,0.8), var(--p-ameth-2)); }
-        .color-emerald .perfume-liquid { background: linear-gradient(180deg, rgba(152,251,152,0.8), var(--p-emerald-2)); }
+        /* Colors */
+        .color-0 .bottle-liquid { background: linear-gradient(180deg, var(--c-gold), var(--c-gold-dark)); }
+        .color-1 .bottle-liquid { background: linear-gradient(180deg, var(--c-rose), var(--c-rose-dark)); }
+        .color-2 .bottle-liquid { background: linear-gradient(180deg, var(--c-cyan), var(--c-cyan-dark)); }
+        .color-3 .bottle-liquid { background: linear-gradient(180deg, var(--c-ameth), var(--c-ameth-dark)); }
+        .color-4 .bottle-liquid { background: linear-gradient(180deg, var(--c-emerd), var(--c-emerd-dark)); }
 
         #tray-container {
             width: 100%;
             display: flex;
             flex-direction: column;
+            align-items: center;
             gap: 10px;
+            margin-top: 10px;
         }
 
         #tray {
@@ -210,736 +208,717 @@
             justify-content: space-around;
             align-items: center;
             width: 100%;
-            height: 160px;
+            max-width: 500px;
             background: var(--panel-bg);
-            border-radius: 16px;
-            padding: 10px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-            transition: background 0.3s;
+            border-radius: 20px;
+            padding: 15px 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
         }
 
-        .shape-container {
-            position: relative;
-            width: 120px;
-            height: 120px;
+        .shape-slot {
+            width: 28vw;
+            max-width: 100px;
+            aspect-ratio: 1;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        .shape {
+        .shape-draggable {
             display: grid;
             gap: 2px;
-            cursor: grab;
-            transition: transform 0.2s;
-        }
-        
-        .shape:active {
-            cursor: grabbing;
+            cursor: pointer;
         }
 
-        .shape.disabled {
-            opacity: 0.4;
+        .shape-draggable.used {
+            opacity: 0.2;
             filter: grayscale(1);
             pointer-events: none;
         }
 
-        .dragging {
+        /* The element currently being dragged */
+        .drag-clone {
             position: fixed;
-            top: 0; 
-            left: 0;
+            top: 0; left: 0;
             pointer-events: none;
             z-index: 1000;
-            opacity: 0.75 !important;
-            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.3));
-            will-change: transform; /* Optimized for GPU */
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.4));
+            opacity: 0.85;
+            /* Will use translate3d via JS */
+            will-change: transform;
         }
 
-        @keyframes clearFlash {
-            0% { transform: scale(1); background: white; opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.8; }
+        /* Animations */
+        @keyframes clearBlock {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.8; filter: brightness(1.5); }
             100% { transform: scale(0); opacity: 0; }
         }
-
         .clearing .perfume-block {
-            animation: clearFlash 0.4s ease-out forwards;
-        }
-
-        .ui-panel {
-            background: var(--panel-bg);
-            padding: 8px 16px;
-            border-radius: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            font-weight: 600;
-            color: var(--text-main);
-            transition: background 0.3s, color 0.3s;
+            animation: clearBlock 0.3s ease-out forwards;
         }
 
         @keyframes shake {
-            10%, 90% { transform: translate3d(-2px, 0, 0); }
-            20%, 80% { transform: translate3d(4px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
-            40%, 60% { transform: translate3d(6px, 0, 0); }
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-5px) rotate(-1deg); }
+            40% { transform: translateX(5px) rotate(1deg); }
+            60% { transform: translateX(-3px); }
+            80% { transform: translateX(3px); }
         }
-        
-        .grid-shake {
-            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        .screen-shake {
+            animation: shake 0.4s ease-out;
         }
 
         @keyframes floatUp {
-            0% { opacity: 0; transform: translateY(0) scale(0.8); }
-            20% { opacity: 1; transform: translateY(-20px) scale(1.2); }
-            100% { opacity: 0; transform: translateY(-80px) scale(1); }
+            0% { transform: translateY(0) scale(0.8); opacity: 0; }
+            20% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+            80% { transform: translateY(-60px) scale(1); opacity: 1; }
+            100% { transform: translateY(-80px) scale(0.9); opacity: 0; }
         }
-
-        .floating-text {
+        .combo-text {
             position: absolute;
             font-family: 'Playfair Display', serif;
             font-size: 2rem;
             font-weight: bold;
-            color: #FFDF00;
-            text-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            color: var(--c-gold);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,255,255,0.8);
             pointer-events: none;
             z-index: 2000;
             animation: floatUp 1.2s ease-out forwards;
-            text-align: center;
-            width: 200px;
-            margin-left: -100px; /* Center horizontally relative to left/top */
         }
 
-        #game-over-screen {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(8px);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 3000;
-        }
-        
-        .go-content {
-            background: var(--panel-bg);
-            padding: 3rem;
-            border-radius: 24px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            transition: background 0.3s;
-        }
-
-        .btn-action {
-            background: linear-gradient(135deg, #14b8a6, #0d9488);
-            color: white;
-            padding: 10px 24px;
-            border-radius: 30px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);
-            transition: transform 0.1s, opacity 0.3s;
-            cursor: pointer;
-            border: none;
-        }
-        .btn-action:active:not(:disabled) {
-            transform: scale(0.95);
-        }
-        .btn-action:disabled {
-            background: #94a3b8;
-            box-shadow: none;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        .top-controls {
+        .header-panel {
             width: 100%;
+            max-width: 500px;
             display: flex;
-            justify-content: flex-end;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 5px;
         }
 
-        .toggle-btn {
+        .score-box {
             background: var(--panel-bg);
-            border: none;
-            color: var(--text-main);
-            padding: 6px 12px;
+            padding: 8px 12px;
             border-radius: 12px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: background 0.3s, color 0.3s;
+            min-width: 80px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        #particles {
+        .title-container {
+            text-align: center;
+            flex-grow: 1;
+            padding: 0 10px;
+        }
+        
+        .main-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
+            font-weight: 700;
+            font-style: italic;
+            line-height: 1.1;
+            margin-bottom: 2px;
+        }
+        
+        .sub-title {
+            font-size: clamp(0.5rem, 2.5vw, 0.75rem);
+            line-height: 1.2;
+            color: var(--text-sub);
+            opacity: 0.9;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #0d9488, #0f766e);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .btn-action:active { transform: scale(0.95); }
+
+        .btn-small {
+            background: var(--panel-bg);
+            border: 1px solid var(--cell-border);
+            color: var(--text-main);
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        #particles-canvas {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             pointer-events: none;
             z-index: 500;
+        }
+
+        #game-over {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .go-card {
+            background: var(--bg-bot);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            color: #0f766e;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            width: 80%;
+            max-width: 350px;
         }
     </style>
 </head>
 <body>
-    <canvas id="particles"></canvas>
 
-    <div id="game-container">
-        <!-- Top Controls -->
-        <div class="top-controls">
-            <button class="toggle-btn" onclick="toggleLanguage()" id="lang-btn">EN</button>
-            <button class="toggle-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
+    <canvas id="particles-canvas"></canvas>
+
+    <div id="game-wrapper">
+        <!-- Top bar: Settings -->
+        <div class="w-full max-w-[500px] flex justify-end gap-2 px-2">
+            <button class="btn-small" id="btn-lang" onclick="toggleLang()">EN</button>
+            <button class="btn-small" id="btn-theme" onclick="toggleTheme()">🌙 Dark</button>
         </div>
 
-        <!-- Header -->
-        <div class="w-full text-center">
-            <div class="flex justify-between items-center px-2 mb-1">
-                <div class="ui-panel text-left">
-                    <span class="text-[10px] uppercase tracking-wider block leading-tight" id="lbl-score">Score</span>
-                    <span id="score" class="text-xl leading-tight">0</span>
-                </div>
-                <h1 class="text-xl sm:text-2xl font-bold italic px-2" id="game-title">TEAL PERFUMES PUZZLE</h1>
-                <div class="ui-panel text-right">
-                    <span class="text-[10px] uppercase tracking-wider block leading-tight" id="lbl-best">Best</span>
-                    <span id="high-score" class="text-xl leading-tight">0</span>
-                </div>
+        <!-- Header: Scores & Title -->
+        <div class="header-panel">
+            <div class="score-box">
+                <div class="text-[0.65rem] uppercase font-bold tracking-wider opacity-80" id="lbl-score">Score</div>
+                <div class="text-xl font-bold leading-none mt-1" id="score">0</div>
             </div>
-            <!-- Subtitle -->
-            <p class="subtitle" id="game-subtitle">TEAL PERFUMES: 𝓞𝓼 𝓶𝓮𝓵𝓱𝓸𝓻𝓮𝓼 𝓬𝓸𝓷𝓽𝓻𝓪𝓽𝓲𝓹𝓸𝓼 𝓲𝓷𝓼𝓹𝓲𝓻𝓪𝓭𝓸𝓼 𝓮𝓶 𝓹𝓮𝓻𝓯𝓾𝓶𝓮𝓼 𝓲𝓶𝓹𝓸𝓻𝓽𝓪𝓭𝓸𝓼 𝓮 𝓷𝓪𝓬𝓲𝓸𝓷𝓪𝓲𝓼</p>
+            
+            <div class="title-container">
+                <div class="main-title" id="lbl-title">TEAL PERFUMES</div>
+                <div class="sub-title">𝓞𝓼 𝓶𝓮𝓵𝓱𝓸𝓻𝓮𝓼 𝓬𝓸𝓷𝓽𝓻𝓪𝓽𝓲𝓹𝓸𝓼 𝓲𝓷𝓼𝓹𝓲𝓻𝓪𝓭𝓸𝓼 𝓮𝓶 𝓹𝓮𝓻𝓯𝓾𝓶𝓮𝓼 𝓲𝓶𝓹𝓸𝓻𝓽𝓪𝓭𝓸𝓼 𝓮 𝓷𝓪𝓬𝓲𝓸𝓷𝓪𝓲𝓼</div>
+            </div>
+
+            <div class="score-box">
+                <div class="text-[0.65rem] uppercase font-bold tracking-wider opacity-80" id="lbl-best">Best</div>
+                <div class="text-xl font-bold leading-none mt-1" id="high-score">0</div>
+            </div>
         </div>
 
-        <!-- The 10x10 Grid -->
-        <div id="grid" class="grid-board"></div>
+        <!-- Game Grid -->
+        <div id="shake-container">
+            <div id="grid" class="grid-board"></div>
+        </div>
 
+        <!-- Bottom Tray & Controls -->
         <div id="tray-container">
-            <div class="flex justify-between items-center px-4 w-full">
-                <span class="text-sm font-bold opacity-80" id="lbl-reroll-status"></span>
-                <button class="btn-action py-1 px-4 text-sm" id="btn-reroll" onclick="useReroll()">🎲 Reroll (1)</button>
+            <div class="w-full max-w-[500px] flex justify-between px-4 items-center">
+                <span class="text-xs font-bold opacity-70" id="lbl-pieces">Pieces</span>
+                <button class="btn-action" onclick="rerollTray()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>
+                    <span id="lbl-reroll">Reroll</span>
+                </button>
             </div>
             <div id="tray"></div>
         </div>
     </div>
 
     <!-- Game Over Screen -->
-    <div id="game-over-screen">
-        <div class="go-content">
-            <h2 class="text-4xl sm:text-5xl font-bold mb-4 font-[Playfair Display] italic" id="lbl-gameover" style="color: var(--text-main);">Out of Space!</h2>
-            <p class="text-lg mb-2" id="lbl-final" style="color: var(--text-main);">Final Score</p>
-            <p id="final-score" class="text-6xl font-bold mb-8" style="color: var(--text-main);">0</p>
-            <button class="btn-action text-lg py-3 px-8" onclick="resetGame()" id="btn-restart">Play Again 🧴</button>
+    <div id="game-over">
+        <div class="go-card">
+            <h2 class="text-3xl font-[Playfair_Display] italic font-bold mb-2" id="lbl-gameover">Out of Space!</h2>
+            <p class="text-sm font-bold uppercase tracking-widest opacity-80 mt-4" id="lbl-final">Final Score</p>
+            <div class="text-5xl font-black mb-6 mt-1" id="final-score">0</div>
+            <button class="btn-action w-full justify-center py-3 text-lg" onclick="resetGame()" id="btn-restart">
+                Play Again 🧴
+            </button>
         </div>
     </div>
 
     <script>
         const GRID_SIZE = 10;
-        const gridElement = document.getElementById('grid');
-        const trayElement = document.getElementById('tray');
-        const scoreElement = document.getElementById('score');
-        const highScoreElement = document.getElementById('high-score');
-        const gameOverScreen = document.getElementById('game-over-screen');
-        const finalScoreElement = document.getElementById('final-score');
-        const btnReroll = document.getElementById('btn-reroll');
-        
         let grid = [];
         let score = 0;
-        let highScore = parseInt(localStorage.getItem('parfumHighScore')) || 0;
+        let highScore = localStorage.getItem('tealPerfumesBest') || 0;
         let currentShapes = [];
-        let currentLang = 'EN';
-        let isDarkMode = false;
-        let rerollsLeft = 1;
         
+        // DOM Elements
+        const gridEl = document.getElementById('grid');
+        const trayEl = document.getElementById('tray');
+        const shakeContainer = document.getElementById('shake-container');
+        const appWrapper = document.getElementById('game-wrapper');
+
+        // Polyomino Shapes (0 = empty, 1 = block)
+        const SHAPES = [
+            [[1]], // 1x1
+            [[1,1],[1,1]], // 2x2
+            [[1,1,1],[1,1,1],[1,1,1]], // 3x3
+            [[1,1]], [[1,1,1]], [[1,1,1,1]], [[1,1,1,1,1]], // H-Lines
+            [[1],[1]], [[1],[1],[1]], [[1],[1],[1],[1]], [[1],[1],[1],[1],[1]], // V-Lines
+            [[1,0],[1,1]], [[0,1],[1,1]], [[1,1],[1,0]], [[1,1],[0,1]], // Small Ls
+            [[1,0,0],[1,0,0],[1,1,1]], [[0,0,1],[0,0,1],[1,1,1]], [[1,1,1],[1,0,0],[1,0,0]], [[1,1,1],[0,0,1],[0,0,1]], // Big Ls
+            [[1,1,1],[0,1,0]], [[0,1,0],[1,1,1]], [[1,0],[1,1],[1,0]], [[0,1],[1,1],[0,1]] // Ts
+        ];
+
+        let currentLang = 'EN';
+        let isDark = false;
+
         const i18n = {
-            'EN': {
-                'score': 'Score',
-                'best': 'Best',
-                'title': 'TEAL PERFUMES PUZZLE',
-                'gameover': 'Out of Space!',
-                'final': 'Final Score',
-                'restart': 'Play Again 🧴',
-                'langBtn': 'PT',
-                'themeLight': '🌙 Dark',
-                'themeDark': '☀️ Light',
-                'rerollBtn': '🎲 Reroll',
-                'combo': 'Combo x',
-                'perfect': 'Perfect!'
-            },
-            'PT': {
-                'score': 'Pontos',
-                'best': 'Recorde',
-                'title': 'QUEBRA-CABEÇA TEAL',
-                'gameover': 'Sem Espaço!',
-                'final': 'Pontuação Final',
-                'restart': 'Jogar Novamente 🧴',
-                'langBtn': 'EN',
-                'themeLight': '🌙 Escuro',
-                'themeDark': '☀️ Claro',
-                'rerollBtn': '🎲 Trocar',
-                'combo': 'Combo x',
-                'perfect': 'Perfeito!'
-            }
+            'EN': { score: 'Score', best: 'Best', title: 'TEAL PERFUMES', pieces: 'Pieces', reroll: 'Reroll', gameover: 'Out of Space!', final: 'Final Score', restart: 'Play Again 🧴', lang: 'PT', themeL: '🌙 Dark', themeD: '☀️ Light' },
+            'PT': { score: 'Pontos', best: 'Recorde', title: 'PERFUMES TEAL', pieces: 'Peças', reroll: 'Sortear', gameover: 'Sem Espaço!', final: 'Pontuação Final', restart: 'Jogar Novamente 🧴', lang: 'EN', themeL: '🌙 Escuro', themeD: '☀️ Claro' }
         };
 
-        function toggleLanguage() {
+        function toggleLang() {
             currentLang = currentLang === 'EN' ? 'PT' : 'EN';
-            updateUI();
+            updateText();
         }
 
         function toggleTheme() {
-            isDarkMode = !isDarkMode;
-            document.body.classList.toggle('dark-mode', isDarkMode);
-            updateUI();
+            isDark = !isDark;
+            document.body.classList.toggle('dark-mode', isDark);
+            updateText();
         }
 
-        function updateUI() {
-            const texts = i18n[currentLang];
-            document.getElementById('lbl-score').innerText = texts['score'];
-            document.getElementById('lbl-best').innerText = texts['best'];
-            document.getElementById('game-title').innerText = texts['title'];
-            document.getElementById('lbl-gameover').innerText = texts['gameover'];
-            document.getElementById('lbl-final').innerText = texts['final'];
-            document.getElementById('btn-restart').innerText = texts['restart'];
-            document.getElementById('lang-btn').innerText = texts['langBtn'];
-            document.getElementById('theme-btn').innerText = isDarkMode ? texts['themeDark'] : texts['themeLight'];
-            updateRerollBtnUI();
+        function updateText() {
+            const t = i18n[currentLang];
+            document.getElementById('lbl-score').innerText = t.score;
+            document.getElementById('lbl-best').innerText = t.best;
+            document.getElementById('lbl-title').innerText = t.title;
+            document.getElementById('lbl-pieces').innerText = t.pieces;
+            document.getElementById('lbl-reroll').innerText = t.reroll;
+            document.getElementById('lbl-gameover').innerText = t.gameover;
+            document.getElementById('lbl-final').innerText = t.final;
+            document.getElementById('btn-restart').innerText = t.restart;
+            document.getElementById('btn-lang').innerText = t.lang;
+            document.getElementById('btn-theme').innerText = isDark ? t.themeD : t.themeL;
         }
 
-        function updateRerollBtnUI() {
-            const texts = i18n[currentLang];
-            btnReroll.innerText = `${texts['rerollBtn']} (${rerollsLeft})`;
-            btnReroll.disabled = rerollsLeft <= 0;
-        }
-
-        const colors = ['color-gold', 'color-rose', 'color-cyan', 'color-ameth', 'color-emerald'];
-
-        const SHAPES = [
-            [[1]], // 1x1
-            [[1,1], [1,1]], // 2x2
-            [[1,1,1], [1,1,1], [1,1,1]], // 3x3
-            [[1,1]], [[1,1,1]], [[1,1,1,1]], [[1,1,1,1,1]], // H-lines
-            [[1],[1]], [[1],[1],[1]], [[1],[1],[1],[1]], [[1],[1],[1],[1],[1]], // V-lines
-            [[1,0], [1,1]], [[0,1], [1,1]], [[1,1], [1,0]], [[1,1], [0,1]], // L-small
-            [[1,0,0], [1,0,0], [1,1,1]], [[0,0,1], [0,0,1], [1,1,1]], // L-medium
-            [[1,1,1], [1,0,0], [1,0,0]], [[1,1,1], [0,0,1], [0,0,1]],
-            [[1,1,1], [0,1,0]], [[0,1,0], [1,1,1]], // T-shapes
-            [[1,0], [1,1], [1,0]], [[0,1], [1,1], [0,1]]
-        ];
-
-        function createPerfumeBlockDOM(colorClass, isGhost = false) {
-            const blockDiv = document.createElement('div');
-            blockDiv.className = `perfume-block ${colorClass}`;
-            if (isGhost) blockDiv.classList.add('ghost-block');
+        function createPerfumeDOM(colorIndex, isGhost = false) {
+            const container = document.createElement('div');
+            container.className = `perfume-block color-${colorIndex} ${isGhost ? 'ghost-block' : ''}`;
             
             const cap = document.createElement('div');
-            cap.className = 'perfume-cap';
+            cap.className = 'bottle-cap';
             
             const glass = document.createElement('div');
-            glass.className = 'perfume-bottle-glass';
+            glass.className = 'bottle-glass';
             
             const liquid = document.createElement('div');
-            liquid.className = 'perfume-liquid';
+            liquid.className = 'bottle-liquid';
             
             glass.appendChild(liquid);
-            blockDiv.appendChild(cap);
-            blockDiv.appendChild(glass);
+            container.appendChild(cap);
+            container.appendChild(glass);
             
-            return blockDiv;
+            return container;
         }
 
         function initGrid() {
-            grid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
-            gridElement.innerHTML = '';
-            for (let r = 0; r < GRID_SIZE; r++) {
-                for (let c = 0; c < GRID_SIZE; c++) {
+            grid = Array.from({length: GRID_SIZE}, () => Array(GRID_SIZE).fill(null));
+            gridEl.innerHTML = '';
+            for(let r=0; r<GRID_SIZE; r++) {
+                for(let c=0; c<GRID_SIZE; c++) {
                     const cell = document.createElement('div');
                     cell.className = 'cell';
                     cell.dataset.r = r;
                     cell.dataset.c = c;
-                    gridElement.appendChild(cell);
+                    gridEl.appendChild(cell);
                 }
             }
-            highScoreElement.innerText = highScore;
-            score = 0;
-            updateScore(0);
-        }
-
-        function renderShape(shapeMatrix, colorClass) {
-            const rows = shapeMatrix.length;
-            const cols = shapeMatrix[0].length;
-            const shapeDiv = document.createElement('div');
-            shapeDiv.className = 'shape';
-            shapeDiv.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-            shapeDiv.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-            
-            const blockSize = 30; // Tray block size
-            shapeDiv.style.width = `${cols * blockSize}px`;
-            shapeDiv.style.height = `${rows * blockSize}px`;
-
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    if (shapeMatrix[r][c]) {
-                        shapeDiv.appendChild(createPerfumeBlockDOM(colorClass));
-                    } else {
-                        const emptyDiv = document.createElement('div');
-                        emptyDiv.style.visibility = 'hidden';
-                        shapeDiv.appendChild(emptyDiv);
-                    }
-                }
-            }
-            
-            shapeDiv.dataset.matrix = JSON.stringify(shapeMatrix);
-            shapeDiv.dataset.color = colorClass;
-            return shapeDiv;
+            document.getElementById('high-score').innerText = highScore;
+            updateScore(0, true);
         }
 
         function generateShapes() {
-            trayElement.innerHTML = '';
+            trayEl.innerHTML = '';
             currentShapes = [];
-            for (let i = 0; i < 3; i++) {
-                const randomShape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            for(let i=0; i<3; i++) {
+                const matrix = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+                const color = Math.floor(Math.random() * 5); // 0 to 4
                 
-                const container = document.createElement('div');
-                container.className = 'shape-container';
-                const shapeDOM = renderShape(randomShape, randomColor);
+                const slot = document.createElement('div');
+                slot.className = 'shape-slot';
                 
-                currentShapes.push({ matrix: randomShape, dom: shapeDOM, used: false });
+                const shapeDOM = renderShapeGrid(matrix, color);
                 
-                container.appendChild(shapeDOM);
-                trayElement.appendChild(container);
-
-                setupDragEvents(shapeDOM, i);
+                currentShapes.push({ matrix, color, used: false, dom: shapeDOM });
+                slot.appendChild(shapeDOM);
+                trayEl.appendChild(slot);
+                
+                initDrag(shapeDOM, i);
             }
             checkGameOver();
         }
 
-        function useReroll() {
-            if (rerollsLeft > 0) {
-                rerollsLeft--;
-                updateRerollBtnUI();
-                generateShapes();
+        function rerollTray() {
+            // Apply small penalty for balancing or just free. Let's make it cost 0 but visual effect
+            generateShapes();
+            createSprayEffect(window.innerWidth/2, window.innerHeight - 100, 2); // spray in center bottom
+        }
+
+        function renderShapeGrid(matrix, colorIndex) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'shape-draggable';
+            const rows = matrix.length;
+            const cols = matrix[0].length;
+            
+            wrapper.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            wrapper.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+            
+            // Fixed small size for tray
+            const blockSize = 24; 
+            wrapper.style.width = `${cols * blockSize}px`;
+            wrapper.style.height = `${rows * blockSize}px`;
+
+            for(let r=0; r<rows; r++) {
+                for(let c=0; c<cols; c++) {
+                    if(matrix[r][c]) {
+                        const block = createPerfumeDOM(colorIndex);
+                        // Ensure blocks inside tray have relative positioning to fit grid
+                        block.style.position = 'relative';
+                        wrapper.appendChild(block);
+                    } else {
+                        const empty = document.createElement('div');
+                        wrapper.appendChild(empty);
+                    }
+                }
             }
+            return wrapper;
         }
 
-        let draggedShape = null;
-        let dragClone = null;
-        let shapeIndex = -1;
-        let offsetX = 0;
-        let offsetY = 0;
-        let dragCellSize = 0;
-        
-        let isDragging = false;
-        let dragTargetX = 0;
-        let dragTargetY = 0;
-
-        function setupDragEvents(shapeDOM, index) {
-            const startDrag = (e) => {
-                if (currentShapes[index].used) return;
-                
-                e.preventDefault();
-                draggedShape = shapeDOM;
-                shapeIndex = index;
-                
-                // Create clone
-                dragClone = shapeDOM.cloneNode(true);
-                dragClone.classList.add('dragging');
-                document.body.appendChild(dragClone);
-                
-                draggedShape.style.opacity = '0';
-                
-                const gridRect = gridElement.getBoundingClientRect();
-                dragCellSize = gridRect.width / GRID_SIZE;
-                
-                const matrix = currentShapes[index].matrix;
-                const rows = matrix.length;
-                const cols = matrix[0].length;
-                
-                dragClone.style.width = `${cols * dragCellSize}px`;
-                dragClone.style.height = `${rows * dragCellSize}px`;
-
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                
-                offsetX = (cols * dragCellSize) / 2;
-                offsetY = (rows * dragCellSize) + 40; 
-                
-                isDragging = true;
-                dragTargetX = clientX;
-                dragTargetY = clientY;
-                
-                requestAnimationFrame(updateDragPosition);
-
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-                document.addEventListener('touchmove', onTouchMove, { passive: false });
-                document.addEventListener('touchend', onTouchEnd);
-            };
-
-            shapeDOM.addEventListener('mousedown', startDrag);
-            shapeDOM.addEventListener('touchstart', startDrag, { passive: false });
-        }
-
-        function updateDragPosition() {
-            if (!isDragging || !dragClone) return;
-            
-            const x = dragTargetX - offsetX;
-            const y = dragTargetY - offsetY;
-            
-            // GPU Accelerated Movement
-            dragClone.style.transform = `translate3d(${x}px, ${y}px, 0) scale(1.1)`;
-            
-            // Handle highlights
-            clearHighlights();
-            const pos = getGridPlacement(x, y);
-            if (pos && canPlace(currentShapes[shapeIndex].matrix, pos.r, pos.c)) {
-                highlightCells(currentShapes[shapeIndex].matrix, pos.r, pos.c);
-            }
-            
-            requestAnimationFrame(updateDragPosition);
-        }
-
-        const onMouseMove = (e) => { dragTargetX = e.clientX; dragTargetY = e.clientY; };
-        const onTouchMove = (e) => {
-            e.preventDefault(); 
-            dragTargetX = e.touches[0].clientX; 
-            dragTargetY = e.touches[0].clientY; 
+        let activeDrag = {
+            isActive: false,
+            index: -1,
+            clone: null,
+            cellPx: 0,
+            x: 0, y: 0,
+            targetR: -1, targetC: -1,
+            rafId: null
         };
 
-        function getGridPlacement(floatingX, floatingY) {
-            const gridRect = gridElement.getBoundingClientRect();
-            const cellCenterX = floatingX + (dragCellSize / 2);
-            const cellCenterY = floatingY + (dragCellSize / 2);
-            const buffer = dragCellSize * 0.5;
+        function initDrag(shapeDOM, index) {
+            const start = (e) => {
+                if(currentShapes[index].used) return;
+                e.preventDefault();
+                
+                const touch = e.touches ? e.touches[0] : e;
+                
+                activeDrag.isActive = true;
+                activeDrag.index = index;
+                
+                // 1. Calculate target cell size based on ACTUAL grid rendering
+                const gridRect = gridEl.getBoundingClientRect();
+                activeDrag.cellPx = gridRect.width / GRID_SIZE;
+                
+                // 2. Create Clone
+                activeDrag.clone = shapeDOM.cloneNode(true);
+                activeDrag.clone.className = 'shape-draggable drag-clone is-dragging'; // add slosh class
+                
+                const matrix = currentShapes[index].matrix;
+                activeDrag.clone.style.width = `${matrix[0].length * activeDrag.cellPx}px`;
+                activeDrag.clone.style.height = `${matrix.length * activeDrag.cellPx}px`;
+                
+                // Fix internal blocks to be absolute again to match cell styling perfectly if needed, 
+                // but grid layout is fine as long as size is right.
+                Array.from(activeDrag.clone.children).forEach(child => {
+                    if(child.classList.contains('perfume-block')) {
+                        child.style.position = 'relative';
+                    }
+                });
 
-            if (cellCenterX < gridRect.left - buffer || cellCenterX > gridRect.right + buffer || 
-                cellCenterY < gridRect.top - buffer || cellCenterY > gridRect.bottom + buffer) {
-                return null;
+                document.body.appendChild(activeDrag.clone);
+                shapeDOM.style.opacity = '0'; // Hide original
+                
+                updateDragPos(touch.clientX, touch.clientY);
+                
+                // 3. Start RAF loop
+                dragLoop();
+                
+                // 4. Attach events
+                document.addEventListener('mousemove', onMove, {passive: false});
+                document.addEventListener('touchmove', onMove, {passive: false});
+                document.addEventListener('mouseup', onEnd);
+                document.addEventListener('touchend', onEnd);
+            };
+            
+            shapeDOM.addEventListener('mousedown', start);
+            shapeDOM.addEventListener('touchstart', start, {passive: false});
+        }
+
+        function onMove(e) {
+            e.preventDefault(); // crucial for preventing pull-to-refresh / scroll
+            const touch = e.touches ? e.touches[0] : e;
+            updateDragPos(touch.clientX, touch.clientY);
+        }
+
+        function updateDragPos(clientX, clientY) {
+            const matrix = currentShapes[activeDrag.index].matrix;
+            const w = matrix[0].length * activeDrag.cellPx;
+            const h = matrix.length * activeDrag.cellPx;
+            
+            // Mobile Offset UX: Lift it ABOVE the finger so user can see it!
+            // About 80px above touch point, horizontally centered.
+            activeDrag.x = clientX - (w / 2);
+            activeDrag.y = clientY - h - 70; 
+
+            // Calculate grid placement
+            calculateGridSnap(activeDrag.x, activeDrag.y, w, h);
+        }
+
+        function dragLoop() {
+            if(!activeDrag.isActive) return;
+            // Hardware accelerated translate
+            activeDrag.clone.style.transform = `translate3d(${activeDrag.x}px, ${activeDrag.y}px, 0) scale(1.1)`;
+            activeDrag.rafId = requestAnimationFrame(dragLoop);
+        }
+
+        function calculateGridSnap(cx, cy, w, h) {
+            const gridRect = gridEl.getBoundingClientRect();
+            
+            // Check based on center of the top-left logical block of the shape
+            const logicalCenterX = cx + (activeDrag.cellPx / 2);
+            const logicalCenterY = cy + (activeDrag.cellPx / 2);
+            
+            clearHighlights();
+            activeDrag.targetR = -1;
+            activeDrag.targetC = -1;
+
+            if (logicalCenterX >= gridRect.left && logicalCenterX <= gridRect.right &&
+                logicalCenterY >= gridRect.top && logicalCenterY <= gridRect.bottom) {
+                
+                const c = Math.floor((logicalCenterX - gridRect.left) / activeDrag.cellPx);
+                const r = Math.floor((logicalCenterY - gridRect.top) / activeDrag.cellPx);
+                
+                const shape = currentShapes[activeDrag.index];
+                if (canPlace(shape.matrix, r, c)) {
+                    activeDrag.targetR = r;
+                    activeDrag.targetC = c;
+                    drawHighlights(shape.matrix, r, c, shape.color);
+                }
             }
-
-            const c = Math.floor((cellCenterX - gridRect.left) / dragCellSize);
-            const r = Math.floor((cellCenterY - gridRect.top) / dragCellSize);
-            return { r, c };
         }
 
         function canPlace(matrix, startR, startC) {
-            for (let r = 0; r < matrix.length; r++) {
-                for (let c = 0; c < matrix[r].length; c++) {
-                    if (matrix[r][c]) {
-                        const targetR = startR + r;
-                        const targetC = startC + c;
-                        if (targetR < 0 || targetR >= GRID_SIZE || targetC < 0 || targetC >= GRID_SIZE) return false;
-                        if (grid[targetR][targetC]) return false;
+            for(let r=0; r<matrix.length; r++) {
+                for(let c=0; c<matrix[r].length; c++) {
+                    if(matrix[r][c]) {
+                        const tr = startR + r;
+                        const tc = startC + c;
+                        if(tr < 0 || tr >= GRID_SIZE || tc < 0 || tc >= GRID_SIZE || grid[tr][tc] !== null) {
+                            return false;
+                        }
                     }
                 }
             }
             return true;
         }
 
-        function clearHighlights() {
-            document.querySelectorAll('.cell-highlight').forEach(el => {
-                el.classList.remove('cell-highlight');
-                const ghost = el.querySelector('.ghost-block');
-                if (ghost) ghost.remove();
-            });
+        function getCell(r, c) {
+            return gridEl.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
         }
 
-        function highlightCells(matrix, startR, startC) {
-            const colorClass = draggedShape ? draggedShape.dataset.color : 'color-gold';
-            for (let r = 0; r < matrix.length; r++) {
-                for (let c = 0; c < matrix[r].length; c++) {
-                    if (matrix[r][c]) {
-                        const cell = getCellDom(startR + r, startC + c);
-                        if (cell) {
-                            cell.classList.add('cell-highlight');
-                            cell.appendChild(createPerfumeBlockDOM(colorClass, true));
-                        }
+        function clearHighlights() {
+            document.querySelectorAll('.cell-highlight').forEach(el => el.classList.remove('cell-highlight'));
+            document.querySelectorAll('.ghost-block').forEach(el => el.remove());
+        }
+
+        function drawHighlights(matrix, startR, startC, colorIndex) {
+            for(let r=0; r<matrix.length; r++) {
+                for(let c=0; c<matrix[r].length; c++) {
+                    if(matrix[r][c]) {
+                        const cell = getCell(startR+r, startC+c);
+                        cell.classList.add('cell-highlight');
+                        const ghost = createPerfumeDOM(colorIndex, true);
+                        cell.appendChild(ghost);
                     }
                 }
             }
         }
 
-        function getCellDom(r, c) {
-            return gridElement.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
-        }
-
-        const onMouseUp = (e) => handleDrop(e.clientX, e.clientY);
-        const onTouchEnd = (e) => handleDrop(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-
-        function handleDrop(clientX, clientY) {
-            if (!dragClone) return;
-            isDragging = false;
-
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-            document.removeEventListener('touchmove', onTouchMove);
-            document.removeEventListener('touchend', onTouchEnd);
-
-            const x = clientX - offsetX;
-            const y = clientY - offsetY;
+        function onEnd(e) {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('mouseup', onEnd);
+            document.removeEventListener('touchend', onEnd);
+            
+            cancelAnimationFrame(activeDrag.rafId);
+            activeDrag.isActive = false;
             
             clearHighlights();
-            const pos = getGridPlacement(x, y);
-            const shapeObj = currentShapes[shapeIndex];
-
-            if (pos && canPlace(shapeObj.matrix, pos.r, pos.c)) {
-                placeShape(shapeObj, pos.r, pos.c);
+            
+            const shapeObj = currentShapes[activeDrag.index];
+            
+            if (activeDrag.targetR !== -1) {
+                // Place it!
+                placeShape(shapeObj, activeDrag.targetR, activeDrag.targetC);
                 shapeObj.used = true;
-                draggedShape.classList.add('disabled');
+                shapeObj.dom.classList.add('used');
+                shapeObj.dom.style.opacity = '1'; // Keep it visible but greyed out
                 
-                createSpraySplash(clientX, clientY, draggedShape.dataset.color);
-                checkLines();
-                
-                if (currentShapes.every(s => s.used)) {
-                    setTimeout(generateShapes, 200);
-                } else {
-                    checkGameOver();
-                }
-            } else {
-                draggedShape.style.opacity = '1';
-            }
+                // Particle spray from center of placed object
+                const gridRect = gridEl.getBoundingClientRect();
+                const sprayX = gridRect.left + (activeDrag.targetC * activeDrag.cellPx) + (shapeObj.matrix[0].length * activeDrag.cellPx)/2;
+                const sprayY = gridRect.top + (activeDrag.targetR * activeDrag.cellPx) + (shapeObj.matrix.length * activeDrag.cellPx)/2;
+                createSprayEffect(sprayX, sprayY, shapeObj.color);
 
-            dragClone.remove();
-            dragClone = null;
-            draggedShape = null;
-            shapeIndex = -1;
+                processBoard();
+            } else {
+                // Snap back
+                shapeObj.dom.style.opacity = '1';
+            }
+            
+            activeDrag.clone.remove();
+            activeDrag.clone = null;
         }
 
-        function placeShape(shapeObj, startR, startC) {
-            const matrix = shapeObj.matrix;
-            const colorClass = draggedShape.dataset.color;
-            let blocksPlaced = 0;
-
-            for (let r = 0; r < matrix.length; r++) {
-                for (let c = 0; c < matrix[r].length; c++) {
-                    if (matrix[r][c]) {
-                        grid[startR + r][startC + c] = colorClass;
-                        const cellDom = getCellDom(startR + r, startC + c);
-                        cellDom.innerHTML = '';
-                        cellDom.appendChild(createPerfumeBlockDOM(colorClass));
-                        blocksPlaced++;
+        function placeShape(shape, startR, startC) {
+            let blocks = 0;
+            for(let r=0; r<shape.matrix.length; r++) {
+                for(let c=0; c<shape.matrix[r].length; c++) {
+                    if(shape.matrix[r][c]) {
+                        grid[startR+r][startC+c] = shape.color;
+                        const cell = getCell(startR+r, startC+c);
+                        cell.innerHTML = '';
+                        cell.appendChild(createPerfumeDOM(shape.color));
+                        blocks++;
                     }
                 }
             }
-            updateScore(blocksPlaced * 10);
+            updateScore(blocks * 10);
         }
 
-        function checkLines() {
-            let rowsToClear = [];
-            let colsToClear = [];
-
-            for (let r = 0; r < GRID_SIZE; r++) {
-                if (grid[r].every(cell => cell !== null)) rowsToClear.push(r);
-            }
-            for (let c = 0; c < GRID_SIZE; c++) {
-                let full = true;
-                for (let r = 0; r < GRID_SIZE; r++) {
-                    if (grid[r][c] === null) { full = false; break; }
-                }
-                if (full) colsToClear.push(c);
-            }
-
-            if (rowsToClear.length > 0 || colsToClear.length > 0) {
-                clearLines(rowsToClear, colsToClear);
-            }
-        }
-
-        function showFloatingText(text, x, y) {
-            const el = document.createElement('div');
-            el.className = 'floating-text';
-            el.innerText = text;
-            el.style.left = `${x}px`;
-            el.style.top = `${y}px`;
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 1200);
-        }
-
-        function clearLines(rows, cols) {
-            const cellsToClear = new Set();
-            rows.forEach(r => { for (let c = 0; c < GRID_SIZE; c++) cellsToClear.add(`${r},${c}`); });
-            cols.forEach(c => { for (let r = 0; r < GRID_SIZE; r++) cellsToClear.add(`${r},${c}`); });
-
-            const totalLines = rows.length + cols.length;
-            const comboMultiplier = totalLines > 1 ? totalLines : 1;
-            const points = totalLines * 100 * comboMultiplier;
-            updateScore(points);
-            createParticles();
-
-            // Juice: Screen shake and Combo Text
-            gridElement.classList.add('grid-shake');
-            setTimeout(() => gridElement.classList.remove('grid-shake'), 400);
-
-            const gridRect = gridElement.getBoundingClientRect();
-            const centerX = gridRect.left + gridRect.width / 2;
-            const centerY = gridRect.top + gridRect.height / 2;
+        function processBoard() {
+            let rows = [];
+            let cols = [];
             
-            if (totalLines >= 4) {
-                showFloatingText(i18n[currentLang]['perfect'], centerX, centerY);
-            } else if (totalLines > 1) {
-                showFloatingText(`${i18n[currentLang]['combo']}${totalLines}!`, centerX, centerY);
+            for(let r=0; r<GRID_SIZE; r++) {
+                if(grid[r].every(v => v !== null)) rows.push(r);
+            }
+            for(let c=0; c<GRID_SIZE; c++) {
+                let full = true;
+                for(let r=0; r<GRID_SIZE; r++) {
+                    if(grid[r][c] === null) { full = false; break; }
+                }
+                if(full) cols.push(c);
+            }
+            
+            const totalLines = rows.length + cols.length;
+            
+            if (totalLines > 0) {
+                // Screen Shake
+                shakeContainer.classList.add('screen-shake');
+                setTimeout(() => shakeContainer.classList.remove('screen-shake'), 400);
+                
+                // Clear animations and logic
+                rows.forEach(r => { for(let c=0; c<GRID_SIZE; c++) clearCell(r, c); });
+                cols.forEach(c => { for(let r=0; r<GRID_SIZE; r++) clearCell(r, c); });
+                
+                // Combo & Scoring
+                const comboMult = totalLines;
+                const points = totalLines * 100 * comboMult;
+                updateScore(points);
+                
+                if (comboMult > 1) {
+                    showComboText(`Combo x${comboMult}!`, points);
+                }
             }
 
-            cellsToClear.forEach(coord => {
-                const [r, c] = coord.split(',').map(Number);
-                const cellDom = getCellDom(r, c);
-                cellDom.classList.add('clearing');
-                grid[r][c] = null;
-                setTimeout(() => {
-                    cellDom.innerHTML = '';
-                    cellDom.classList.remove('clearing');
-                }, 400);
-            });
-
-            setTimeout(checkGameOver, 450);
+            if (currentShapes.every(s => s.used)) {
+                setTimeout(generateShapes, 150);
+            } else {
+                // delay game over check to allow clear animations to logic
+                setTimeout(checkGameOver, totalLines > 0 ? 350 : 50); 
+            }
         }
 
-        function updateScore(points) {
-            score += points;
-            scoreElement.innerText = score;
+        function clearCell(r, c) {
+            if(grid[r][c] === null) return;
+            const cell = getCell(r, c);
+            cell.classList.add('clearing');
+            grid[r][c] = null;
+            setTimeout(() => {
+                cell.innerHTML = '';
+                cell.classList.remove('clearing');
+            }, 300);
+        }
+
+        function updateScore(pts, init=false) {
+            if(!init) score += pts;
+            document.getElementById('score').innerText = score;
+            
             if (score > highScore) {
                 highScore = score;
-                highScoreElement.innerText = highScore;
-                localStorage.setItem('parfumHighScore', highScore);
+                document.getElementById('high-score').innerText = highScore;
+                localStorage.setItem('tealPerfumesBest', highScore);
             }
-            if (points > 0) {
-                scoreElement.style.transform = 'scale(1.3)';
-                setTimeout(() => scoreElement.style.transform = 'scale(1)', 150);
-                scoreElement.style.transition = 'transform 0.15s ease-out';
+            
+            if(pts > 0) {
+                const el = document.getElementById('score');
+                el.style.transform = 'scale(1.4)';
+                el.style.color = 'var(--c-gold)';
+                setTimeout(() => {
+                    el.style.transform = 'scale(1)';
+                    el.style.color = 'inherit';
+                }, 200);
             }
+        }
+
+        function showComboText(text, pts) {
+            const div = document.createElement('div');
+            div.className = 'combo-text';
+            div.innerText = `${text} +${pts}`;
+            
+            // Position dynamically in middle of screen
+            div.style.left = '50%';
+            div.style.top = '40%';
+            div.style.transform = 'translate(-50%, -50%)';
+            
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 1200);
         }
 
         function checkGameOver() {
-            for (let i = 0; i < currentShapes.length; i++) {
-                if (currentShapes[i].used) continue;
-                const matrix = currentShapes[i].matrix;
-                let canFit = false;
-
-                for (let r = 0; r < GRID_SIZE; r++) {
-                    for (let c = 0; c < GRID_SIZE; c++) {
-                        if (canPlace(matrix, r, c)) { canFit = true; break; }
+            for(let i=0; i<currentShapes.length; i++) {
+                if(currentShapes[i].used) continue;
+                let fits = false;
+                for(let r=0; r<GRID_SIZE; r++) {
+                    for(let c=0; c<GRID_SIZE; c++) {
+                        if(canPlace(currentShapes[i].matrix, r, c)) {
+                            fits = true; break;
+                        }
                     }
-                    if (canFit) break;
+                    if(fits) break;
                 }
-                if (canFit) return;
+                if(fits) return; 
             }
-            
-            // No moves available
+            // Game Over
             setTimeout(() => {
-                finalScoreElement.innerText = score;
-                gameOverScreen.style.display = 'flex';
+                document.getElementById('final-score').innerText = score;
+                document.getElementById('game-over').style.display = 'flex';
             }, 300);
         }
 
         function resetGame() {
-            gameOverScreen.style.display = 'none';
-            rerollsLeft = 1;
-            updateRerollBtnUI();
+            document.getElementById('game-over').style.display = 'none';
+            score = 0;
             initGrid();
             generateShapes();
         }
 
-        const canvas = document.getElementById('particles');
+        const canvas = document.getElementById('particles-canvas');
         const ctx = canvas.getContext('2d');
-        let particlesArr = [];
-
+        let particles = [];
+        
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -947,78 +926,59 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        function createParticles() {
-            const colors = ['#14b8a6', '#99f6e4', '#2dd4bf', '#ccfbf1'];
-            for(let i=0; i<40; i++) {
-                particlesArr.push({
-                    x: canvas.width / 2 + (Math.random() - 0.5) * 300,
-                    y: canvas.height / 2 + (Math.random() - 0.5) * 300,
-                    size: Math.random() * 6 + 2,
-                    speedX: (Math.random() - 0.5) * 10,
-                    speedY: (Math.random() - 0.5) * 10 - 2,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    life: 1
-                });
-            }
-        }
+        const colorMap = ['#FFD700', '#FF69B4', '#00FFFF', '#DDA0DD', '#50C878']; // Matches color-0 to 4
 
-        function createSpraySplash(x, y, colorClass) {
-            const sprayColors = {
-                'color-gold': '#FFDF00', 'color-rose': '#FF69B4',
-                'color-cyan': '#00CED1', 'color-ameth': '#DDA0DD',
-                'color-emerald': '#98FB98'
-            };
-            const pColor = sprayColors[colorClass] || '#ffffff';
-            
-            for(let i=0; i<25; i++) {
-                particlesArr.push({
+        function createSprayEffect(x, y, colorIndex) {
+            const color = colorMap[colorIndex] || '#ffffff';
+            for(let i=0; i<30; i++) {
+                particles.push({
                     x: x + (Math.random() - 0.5) * 40,
                     y: y + (Math.random() - 0.5) * 40,
-                    size: Math.random() * 3 + 1,
-                    speedX: (Math.random() - 0.5) * 6,
-                    speedY: (Math.random() - 1) * 6,
-                    color: pColor,
+                    size: Math.random() * 4 + 1,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 1) * 8 - 2, // spray up
                     life: 1,
-                    isMist: true
+                    decay: Math.random() * 0.03 + 0.02,
+                    color: color
                 });
             }
         }
 
-        function animateParticles() {
+        function renderParticles() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for(let i = 0; i < particlesArr.length; i++){
-                let p = particlesArr[i];
-                ctx.fillStyle = p.color;
+            for(let i=0; i<particles.length; i++) {
+                let p = particles[i];
                 ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
                 ctx.fill();
                 
-                p.x += p.speedX;
-                p.y += p.speedY;
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vx *= 0.92; // friction
+                p.vy += 0.2;  // gravity
+                p.life -= p.decay;
                 
-                if (p.isMist) {
-                    p.speedX *= 0.95;
-                    p.speedY *= 0.95;
-                    p.life -= 0.04;
-                } else {
-                    p.speedY += 0.15;
-                    p.life -= 0.02;
-                }
-                
-                if(p.life <= 0){
-                    particlesArr.splice(i, 1);
+                if(p.life <= 0) {
+                    particles.splice(i, 1);
                     i--;
                 }
             }
             ctx.globalAlpha = 1;
-            requestAnimationFrame(animateParticles);
+            requestAnimationFrame(renderParticles);
         }
-        
-        animateParticles();
-        updateUI();
+        renderParticles();
+
+        // Boot Game
+        updateText();
         initGrid();
         generateShapes();
+        
+        // Prevent default touch behavior on the whole document to stop pull-to-refresh on mobile
+        document.addEventListener('touchmove', function(event) {
+            event.preventDefault();
+        }, { passive: false });
     </script>
 </body>
 </html>
